@@ -25,7 +25,7 @@ model Creator {
   name                 String?
   fileversDocId        String?  @map("fileverse_doc_id")
   fileversDocHash      String?  @map("fileverse_doc_hash")
-  pushSubscription     String?  @map("push_subscription")
+  email                String?
   summaryTime          String   @default("20:00") @map("summary_time")
   notificationsEnabled Boolean  @default(false) @map("notifications_enabled")
   createdAt            DateTime @default(now()) @map("created_at")
