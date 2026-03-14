@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PaymentType {
+  human
+  agent
+}
+
+enum TransactionStatus {
+  pending
+  confirmed
+  failed
+}
+
+model Creator {
+  id        String   @id @default(cuid())
+  wallet    String   @unique
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("creators")
+}
+
+model Transaction {
+  id            String            @id @default(cuid())
+  creatorWallet String            @map("creator_wallet")
+  amount        Float
+  currency      String            @default("USDC")
+  type          PaymentType
+  txHash        String            @unique @map("tx_hash")
+  status        TransactionStatus @default(pending)
+  senderWallet  String?           @map("sender_wallet")
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  @@index([creatorWallet])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+model Analytics {
+  id            String @id @default(cuid())
+  wallet        String @unique
+  pageViews     Int    @default(0) @map("page_views")
+  agentRequests Int    @default(0) @map("agent_requests")
+  humanTips     Int    @default(0) @map("human_tips")
+  totalEarnings Float  @default(0) @map("total_earnings")
+
+  @@map("analytics")
+}

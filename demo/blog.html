@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Future of AI Agents — Demo Blog | AgentTip</title>
+  <meta name="description" content="A demo blog post showcasing AgentTip's human tipping and AI agent micropayments.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0a0a0f;
+      color: #e5e7eb;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Nav */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 0 24px;
+    }
+    .nav-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      color: #f1f1f4;
+      text-decoration: none;
+    }
+    .nav-brand-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+    .nav-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(99, 102, 241, 0.12);
+      color: #a5b4fc;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* Article */
+    article {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 60px 24px 120px;
+    }
+
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .article-tag {
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(16, 185, 129, 0.12);
+      color: #6ee7b7;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -0.03em;
+      color: #f9fafb;
+    }
+    h1 span {
+      background: linear-gradient(135deg, #6366f1, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: #9ca3af;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+    .hero-img {
+      width: 100%;
+      height: 360px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #1e1b4b, #312e81, #4338ca);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-img::before {
+      content: '';
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: rgba(139, 92, 246, 0.3);
+      border-radius: 50%;
+      filter: blur(60px);
+      top: 20%;
+      left: 30%;
+    }
+    .hero-img::after {
+      content: '';
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      background: rgba(99, 102, 241, 0.3);
+      border-radius: 50%;
+      filter: blur(60px);
+      bottom: 20%;
+      right: 20%;
+    }
+    .hero-img-text {
+      font-size: 48px;
+      z-index: 1;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 48px 0 16px;
+      color: #f9fafb;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      margin-bottom: 20px;
+      color: #d1d5db;
+      font-size: 16px;
+    }
+
+    .highlight {
+      background: rgba(99, 102, 241, 0.1);
+      border-left: 3px solid #6366f1;
+      padding: 20px 24px;
+      border-radius: 0 12px 12px 0;
+      margin: 32px 0;
+    }
+    .highlight p {
+      margin: 0;
+      color: #c7d2fe;
+      font-style: italic;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255,255,255,0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #a5b4fc;
+    }
+
+    pre {
+      background: #111118;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 24px 0;
+      overflow-x: auto;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #e5e7eb;
+    }
+
+    ul {
+      margin: 16px 0 24px 24px;
+      color: #d1d5db;
+    }
+    ul li {
+      margin-bottom: 8px;
+    }
+
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      border-radius: 2px;
+      margin: 48px 0;
+    }
+
+    /* Author */
+    .author {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 24px;
+      background: rgba(17, 17, 24, 0.8);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      margin-top: 48px;
+    }
+    .author-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: white;
+      flex-shrink: 0;
+    }
+    .author-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: #f9fafb;
+    }
+    .author-bio {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-brand">
+        <div class="nav-brand-icon">⚡</div>
+        Demo Blog
+      </a>
+      <span class="nav-badge">AgentTip Enabled</span>
+    </div>
+  </nav>
+
+  <article>
+    <div class="article-meta">
+      <span class="article-tag">AI & Blockchain</span>
+      <span>March 14, 2026</span>
+      <span>·</span>
+      <span>8 min read</span>
+    </div>
+
+    <h1>The Future of <span>AI Agent Payments</span> on the Open Web</h1>
+    <p class="subtitle">
+      How the x402 protocol and micropayments are creating a new economic layer 
+      where both humans and AI agents pay for content seamlessly.
+    </p>
+
+    <div class="hero-img">
+      <span class="hero-img-text">🤖💰</span>
+    </div>
+
+    <p>
+      The internet is undergoing a fundamental transformation. For the first time in its history, 
+      a significant portion of web traffic isn't coming from humans — it's coming from 
+      <strong>AI agents</strong>. These autonomous programs browse, read, analyze, and take action 
+      on the web, often without any human in the loop.
+    </p>
+
+    <p>
+      This raises an important question: <strong>how should AI agents pay for content?</strong>
+    </p>
+
+    <div class="highlight">
+      <p>
+        "AI agents will become the largest consumers of web content by 2027. 
+        The payment infrastructure needs to evolve to support them." — Web3 Research Labs
+      </p>
+    </div>
+
+    <h2>The x402 Protocol</h2>
+
+    <p>
+      Enter <code>HTTP 402 Payment Required</code> — a status code that has existed since the early 
+      days of HTTP but was never widely implemented. The <strong>x402 protocol</strong> by Coinbase 
+      finally gives it purpose.
+    </p>
+
+    <p>
+      When an AI agent requests content from a website running x402, the server responds with:
+    </p>
+
+    <pre><code>HTTP/1.1 402 Payment Required
+X-Payment-Amount: 0.001
+X-Payment-Asset: USDC
+X-Payment-Network: base
+X-Payment-Recipient: 0x742d35Cc6634C0532925a3b844Bc9e7595f2bD78</code></pre>
+
+    <p>
+      The agent reads these headers, makes a micropayment of <code>$0.001 USDC</code> on Base, 
+      and resubmits the request with payment proof. Content is then served.
+    </p>
+
+    <h2>Why USDC on Base?</h2>
+
+    <p>
+      Base provides the ideal settlement layer for micropayments:
+    </p>
+
+    <ul>
+      <li><strong>Low fees</strong> — sub-cent transaction costs make $0.001 payments viable</li>
+      <li><strong>Fast finality</strong> — payments confirm in seconds</li>
+      <li><strong>USDC stability</strong> — no volatility risk for creators</li>
+      <li><strong>Coinbase ecosystem</strong> — seamless wallet integration</li>
+    </ul>
+
+    <h2>Two Payment Flows, One Widget</h2>
+
+    <p>
+      What makes this approach powerful is the dual nature of the payment system. 
+      A single widget handles both:
+    </p>
+
+    <p>
+      <strong>For humans:</strong> A beautiful floating tip button lets visitors support creators 
+      with $0.50, $1, or $5 USDC tips using Coinbase Smart Wallet. One click, instant transfer.
+    </p>
+
+    <p>
+      <strong>For AI agents:</strong> Automatic x402 micropayments of $0.001 per request. 
+      No UI needed — the protocol handles everything at the HTTP level.
+    </p>
+
+    <pre><code>&lt;!-- One line to monetize your content --&gt;
+&lt;script src="https://agenttip.xyz/widget.js"
+  data-wallet="YOUR_WALLET"&gt;&lt;/script&gt;</code></pre>
+
+    <h2>The Creator Economy, Reimagined</h2>
+
+    <p>
+      This model fundamentally changes content monetization. Instead of relying on ads 
+      or subscriptions, creators earn directly from every reader — human or AI.
+    </p>
+
+    <p>
+      A blog post read by 10,000 AI agents at $0.001 each generates $10 automatically. 
+      Add human tips on top, and creators have a sustainable, diversified revenue stream 
+      that doesn't depend on advertising.
+    </p>
+
+    <div class="highlight">
+      <p>
+        The convergence of AI agents and blockchain micropayments represents 
+        the most significant shift in content monetization since the invention of programmatic advertising.
+      </p>
+    </div>
+
+    <p>
+      We're just at the beginning. As AI agents become more prevalent, the economic 
+      infrastructure powering the web will need to evolve. The x402 protocol is that evolution.
+    </p>
+
+    <div class="divider"></div>
+
+    <div class="author">
+      <div class="author-avatar">AT</div>
+      <div>
+        <div class="author-name">AgentTip Team</div>
+        <div class="author-bio">Building the payment layer for humans and AI on the open web.</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- AgentTip Widget — One Line Install -->
+  <script src="../widget/dist/widget.js" data-wallet="0x742d35Cc6634C0532925a3b844Bc9e7595f2bD78" data-api="http://localhost:3001"></script>
+</body>
+</html>
