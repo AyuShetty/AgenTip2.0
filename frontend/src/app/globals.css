@@ -63,3 +63,11 @@ body {
 .glow-primary {
   box-shadow: 0 0 60px rgba(99, 102, 241, 0.15);
 }
+
+/* Intelligence feed card */
+.intelligence-card {
+  transition: box-shadow 0.3s ease;
+}
+.intelligence-card:hover {
+  box-shadow: 0 0 40px rgba(139, 92, 246, 0.08);
+}

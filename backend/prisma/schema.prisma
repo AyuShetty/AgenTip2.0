@@ -20,10 +20,12 @@ enum TransactionStatus {
 }
 
 model Creator {
-  id        String   @id @default(cuid())
-  wallet    String   @unique
-  name      String?
-  createdAt DateTime @default(now()) @map("created_at")
+  id              String   @id @default(cuid())
+  wallet          String   @unique
+  name            String?
+  fileversDocId   String?  @map("fileverse_doc_id")
+  fileversDocHash String?  @map("fileverse_doc_hash")
+  createdAt       DateTime @default(now()) @map("created_at")
 
   @@map("creators")
 }
@@ -37,6 +39,9 @@ model Transaction {
   txHash        String            @unique @map("tx_hash")
   status        TransactionStatus @default(pending)
   senderWallet  String?           @map("sender_wallet")
+  agentContext  String?           @map("agent_context")
+  agentQuery    String?           @map("agent_query")
+  writtenToDoc  Boolean           @default(false) @map("written_to_doc")
   createdAt     DateTime          @default(now()) @map("created_at")
 
   @@index([creatorWallet])

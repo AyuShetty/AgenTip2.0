@@ -4,13 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Zap, ArrowLeft, DollarSign, Heart, Bot, Eye,
-  Copy, Check, TrendingUp, ExternalLink
+  Copy, Check, TrendingUp, ExternalLink, Brain, Shield, Lock
 } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend
 } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -33,10 +34,27 @@ interface Stats {
   }>;
 }
 
+interface IntelligenceData {
+  hasDoc: boolean;
+  message?: string;
+  docId?: string;
+  ipfsHash?: string;
+  viewerUrl?: string;
+  recentIntelligence?: Array<{
+    id: string;
+    senderWallet: string | null;
+    agentContext: string | null;
+    agentQuery: string | null;
+    amount: number;
+    createdAt: string;
+  }>;
+}
+
 export default function DashboardPage() {
   const [wallet, setWallet] = useState('');
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [intelligence, setIntelligence] = useState<IntelligenceData | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -56,6 +74,18 @@ export default function DashboardPage() {
     }
   }, []);
 
+  const fetchIntelligence = useCallback(async (walletAddr: string) => {
+    try {
+      const res = await fetch(`${API_URL}/creator/${walletAddr}/intelligence`);
+      if (res.ok) {
+        const data = await res.json();
+        setIntelligence(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch intelligence:', err);
+    }
+  }, []);
+
   useEffect(() => {
     // Check localStorage for saved wallet
     const saved = localStorage.getItem('agenttip-wallet');
@@ -63,8 +93,9 @@ export default function DashboardPage() {
       setWallet(saved);
       setIsOnboarded(true);
       fetchStats(saved);
+      fetchIntelligence(saved);
     }
-  }, [fetchStats]);
+  }, [fetchStats, fetchIntelligence]);
 
   useEffect(() => {
     if (!isOnboarded || !wallet) return;
@@ -76,16 +107,20 @@ export default function DashboardPage() {
     s.emit('join-creator', wallet);
 
     s.on('new-tip', () => fetchStats(wallet));
-    s.on('new-agent-payment', () => fetchStats(wallet));
+    s.on('new-agent-payment', () => {
+      fetchStats(wallet);
+      fetchIntelligence(wallet);
+    });
 
     return () => { s.disconnect(); };
-  }, [isOnboarded, wallet, fetchStats]);
+  }, [isOnboarded, wallet, fetchStats, fetchIntelligence]);
 
   const handleOnboard = () => {
     if (wallet.match(/^0x[a-fA-F0-9]{40}$/)) {
       localStorage.setItem('agenttip-wallet', wallet.toLowerCase());
       setIsOnboarded(true);
       fetchStats(wallet.toLowerCase());
+      fetchIntelligence(wallet.toLowerCase());
     }
   };
 
@@ -283,6 +318,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* ── AI Intelligence Feed ── */}
+            <IntelligenceFeed data={intelligence} />
+
             {/* Transaction table */}
             <div className="glass-card p-6">
               <h2 className="text-lg font-semibold mb-4">Recent Transactions</h2>
@@ -358,6 +396,131 @@ export default function DashboardPage() {
   );
 }
 
+/* ─── Intelligence Feed Component ─── */
+function IntelligenceFeed({ data }: { data: IntelligenceData | null }) {
+  const entries = data?.recentIntelligence?.slice(0, 5) || [];
+
+  return (
+    <div className="mb-8">
+      <div className="glass-card p-6 intelligence-card">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center">
+              <Brain className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold">🧠 AI Intelligence Feed</h2>
+              <p className="text-sm text-at-muted">What AI agents were researching when they paid you</p>
+            </div>
+          </div>
+          {data?.viewerUrl && (
+            <a
+              href={data.viewerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium hover:bg-purple-500/20 transition-colors"
+            >
+              Open full doc in dDocs
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
+        </div>
+
+        {/* Content */}
+        {!data?.hasDoc ? (
+          /* Empty state */
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-at-surface-2 border border-at-border flex items-center justify-center mb-4">
+              <Bot className="w-8 h-8 text-at-muted/50" />
+            </div>
+            <p className="text-at-muted mb-1">No agents have visited yet</p>
+            <p className="text-at-muted/60 text-sm max-w-md">
+              Your intelligence feed will appear here after the first AI agent pays to access your content.
+              Each agent will leave a note about what they were researching.
+            </p>
+          </div>
+        ) : (
+          /* Intelligence entries */
+          <div className="space-y-3">
+            <AnimatePresence>
+              {entries.map((entry, i) => (
+                <motion.div
+                  key={entry.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08, duration: 0.3 }}
+                  className="bg-at-bg/80 rounded-xl p-4 border border-at-border/60 hover:border-purple-500/20 transition-colors group"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🤖</span>
+                      <span className="font-mono text-xs text-purple-300">
+                        {entry.senderWallet
+                          ? `${entry.senderWallet.slice(0, 8)}...${entry.senderWallet.slice(-4)}`
+                          : 'unknown agent'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-at-muted">
+                      <span className="text-green-400 font-medium">${entry.amount.toFixed(4)} USDC</span>
+                      <span>
+                        {new Date(entry.createdAt).toLocaleDateString('en-US', {
+                          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <p className="text-at-text/90">
+                      <span className="text-at-muted">📋 Task:</span>{' '}
+                      {entry.agentContext || 'General research'}
+                    </p>
+                    <p className="text-at-text/80">
+                      <span className="text-at-muted">❓ Researching:</span>{' '}
+                      {entry.agentQuery || 'No query specified'}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {entries.length === 0 && data.hasDoc && (
+              <div className="text-center py-8 text-at-muted text-sm">
+                Intelligence doc created. Entries will appear after the next agent payment.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Privacy banner */}
+        <div className="mt-6 flex items-center gap-3 px-4 py-3 rounded-lg bg-at-surface/50 border border-at-border/50">
+          <div className="flex items-center gap-1.5 text-at-muted/70">
+            <Lock className="w-3.5 h-3.5" />
+            <Shield className="w-3.5 h-3.5" />
+          </div>
+          <p className="text-xs text-at-muted/70">
+            This document is written by agents, encrypted by Fileverse, and stored on IPFS. AgentTip cannot read it.
+          </p>
+        </div>
+
+        {/* Mobile CTA */}
+        {data?.viewerUrl && (
+          <a
+            href={data.viewerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="sm:hidden mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium hover:bg-purple-500/20 transition-colors"
+          >
+            Open full doc in dDocs
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Stat Card Component ─── */
 function StatCard({
   icon: Icon, label, value, subtext, color, bgColor
 }: {

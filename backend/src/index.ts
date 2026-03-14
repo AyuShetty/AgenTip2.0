@@ -24,7 +24,7 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Payment-Proof', 'X-Payment-TxHash', 'X-Agent-Type'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Payment-Proof', 'X-Payment-TxHash', 'X-Agent-Type', 'X-Agent-Context', 'X-Agent-Query', 'X-Content-Title', 'X-Agent-Address'],
 }));
 app.use(express.json());
 app.use(generalLimiter);
