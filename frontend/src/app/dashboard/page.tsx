@@ -12,6 +12,7 @@ import {
   ResponsiveContainer, Legend
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -58,6 +59,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
+
+  const [summaryTime, setSummaryTime] = useState('20:00');
+  const { permission, isSubscribed, isLoading: isPushLoading, subscribe, sendTestNotification } = usePushNotifications(wallet);
 
   const fetchStats = useCallback(async (walletAddr: string) => {
     setLoading(true);
@@ -288,6 +292,77 @@ export default function DashboardPage() {
                 ) : (
                   <div className="h-[280px] flex items-center justify-center text-at-muted text-sm">
                     No revenue data yet. Share your page to start earning!
+                  </div>
+                )}
+              </div>
+
+              {/* Push Notifications Card */}
+              <div className="rounded-xl border border-gray-800 p-6 bg-gray-900">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-2xl">🔔</span>
+                  <div>
+                    <h3 className="font-semibold text-white">Daily Earnings Summary</h3>
+                    <p className="text-sm text-gray-400">
+                      One popup per day. No spam. Powered by Hey Elsa.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Time picker */}
+                <div className="flex items-center gap-3 mb-4">
+                  <label className="text-sm text-gray-400">Send summary at:</label>
+                  <select
+                    className="bg-gray-800 text-white rounded-lg px-3 py-1.5 text-sm border border-gray-700"
+                    defaultValue="20:00"
+                    onChange={(e) => setSummaryTime(e.target.value)}
+                  >
+                    <option value="18:00">6:00 PM</option>
+                    <option value="19:00">7:00 PM</option>
+                    <option value="20:00">8:00 PM</option>
+                    <option value="21:00">9:00 PM</option>
+                    <option value="22:00">10:00 PM</option>
+                  </select>
+                </div>
+
+                {/* Preview of what the notification looks like */}
+                <div className="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
+                  <p className="text-xs text-gray-500 mb-2">Preview</p>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-sm">⚡</div>
+                    <div>
+                      <p className="text-sm font-medium text-white">📊 AgentTip Daily Summary</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        You earned $4.73 today — 1,247 agent visits, 3 human tips. Elsa found 11.2% APY for your earnings.
+                      </p>
+                      <div className="flex gap-2 mt-2">
+                        <span className="text-xs bg-purple-900 text-purple-300 px-2 py-0.5 rounded">💰 Deploy with Elsa</span>
+                        <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">📊 View Dashboard</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enable button */}
+                {!isSubscribed ? (
+                  <button
+                    onClick={() => subscribe(summaryTime)}
+                    disabled={isPushLoading}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+                  >
+                    {isPushLoading ? 'Enabling...' : '🔔 Enable Daily Summary'}
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-green-400 text-sm">
+                      <span>✅</span>
+                      <span>Daily summary enabled at {summaryTime}</span>
+                    </div>
+                    <button
+                      onClick={sendTestNotification}
+                      className="w-full border border-gray-700 text-gray-300 rounded-lg py-2 text-sm hover:bg-gray-800 transition-colors"
+                    >
+                      Send test notification now
+                    </button>
                   </div>
                 )}
               </div>

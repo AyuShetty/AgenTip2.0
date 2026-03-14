@@ -11,6 +11,8 @@ import tipRouter from './routes/tip';
 import verifyRouter from './routes/verify';
 import creatorRouter from './routes/creator';
 import transactionsRouter from './routes/transactions';
+import notifyRouter from './routes/notify';
+import { startDailySummaryCron } from './jobs/dailySummary';
 
 const app = express();
 const server = createServer(app);
@@ -46,6 +48,7 @@ app.use('/tip', tipRouter);
 app.use('/verify-payment', verifyRouter);
 app.use('/creator', creatorRouter);
 app.use('/transactions', transactionsRouter);
+app.use('/notify', notifyRouter);
 
 // 404 handler
 app.use((_req, res) => {
@@ -67,6 +70,9 @@ server.listen(PORT, () => {
   ║     Environment: ${(process.env.NODE_ENV || 'development').padEnd(20)}║
   ╚════════════════════════════════════════╝
   `);
+
+  // Start cron jobs
+  startDailySummaryCron();
 });
 
 export default app;
