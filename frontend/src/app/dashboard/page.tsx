@@ -115,7 +115,10 @@ export default function DashboardPage() {
   const fetchStats = useCallback(async (walletAddr: string) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('agenttip-token');
+      let token = null;
+      if (typeof window !== 'undefined') {
+        token = localStorage.getItem('agenttip-token');
+      }
       const headers: Record<string, string> = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -133,7 +136,10 @@ export default function DashboardPage() {
 
   const fetchIntelligence = useCallback(async (walletAddr: string) => {
     try {
-      const token = localStorage.getItem('agenttip-token');
+      let token = null;
+      if (typeof window !== 'undefined') {
+        token = localStorage.getItem('agenttip-token');
+      }
       const headers: Record<string, string> = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -261,7 +267,10 @@ export default function DashboardPage() {
 
   const handleSaveEnsName = async (ensName: string) => {
     try {
-      const token = localStorage.getItem('agenttip-token');
+      let token = null;
+      if (typeof window !== 'undefined') {
+        token = localStorage.getItem('agenttip-token');
+      }
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
