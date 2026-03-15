@@ -8,6 +8,7 @@
     "widget"
   ],
   "scripts": {
-    "vercel-build": "npm run build --workspace=frontend"
+    "vercel-build": "npm run build --workspace=frontend",
+    "postinstall": "npm run db:generate --workspace=backend"
   }
 }
