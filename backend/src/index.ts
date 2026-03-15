@@ -12,7 +12,10 @@ import verifyRouter from './routes/verify';
 import creatorRouter from './routes/creator';
 import transactionsRouter from './routes/transactions';
 import notifyRouter from './routes/notify';
+import willRouter from './routes/will';
+import authRouter from './routes/auth';
 import { startDailySummaryCron } from './jobs/dailySummary';
+import { startWillExecutorCron } from './jobs/willExecutor';
 
 const app = express();
 const server = createServer(app);
@@ -44,11 +47,13 @@ app.get('/health', (_req, res) => {
 });
 
 // API Routes
+app.use('/auth', authRouter);
 app.use('/tip', tipRouter);
 app.use('/verify-payment', verifyRouter);
 app.use('/creator', creatorRouter);
 app.use('/transactions', transactionsRouter);
 app.use('/notify', notifyRouter);
+app.use('/api/will', willRouter);
 
 // 404 handler
 app.use((_req, res) => {
@@ -73,6 +78,7 @@ server.listen(PORT, () => {
 
   // Start cron jobs
   startDailySummaryCron();
+  startWillExecutorCron();
 });
 
 export default app;

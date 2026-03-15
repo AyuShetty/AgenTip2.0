@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import { isValidAddress, isTxHashUsed, markTxHashUsed } from '../lib/verify';
+import { isValidAddress, isTxHashUsed, markTxHashUsed, verifyUSDCTransfer } from '../lib/verify';
 import { emitNewAgentPayment } from '../lib/socket';
 import { appendAgentIntelligence, createCreatorIntelligenceDoc } from '../lib/fileverse';
 import { paymentLimiter } from '../middleware/rateLimit';
@@ -45,6 +45,27 @@ router.post('/', paymentLimiter, async (req: Request, res: Response): Promise<vo
     const contentTitle = (req.headers['x-content-title'] as string) || req.path;
     const agentAddress = (req.headers['x-agent-address'] as string) || 'unknown';
 
+    // Verify on-chain. In production this would check the Escrow contract instead of direct transfer
+    const verification = await verifyUSDCTransfer(txHash, process.env.ESCROW_ADDRESS || wallet, paymentAmount);
+
+    if (!verification.valid) {
+      // Record as failed
+      await prisma.transaction.create({
+        data: {
+          creatorWallet: wallet.toLowerCase(),
+          amount: paymentAmount,
+          currency: 'USDC',
+          type: 'agent',
+          txHash: txHash.toLowerCase(),
+          status: 'failed',
+          agentContext,
+          agentQuery,
+        },
+      });
+      res.status(400).json({ error: 'Transaction verification failed' });
+      return;
+    }
+
     // Ensure creator exists
     let creator = await prisma.creator.upsert({
       where: { wallet: wallet.toLowerCase() },
@@ -52,7 +73,7 @@ router.post('/', paymentLimiter, async (req: Request, res: Response): Promise<vo
       create: { wallet: wallet.toLowerCase() },
     });
 
-    // Record agent payment transaction (with intelligence context)
+    // Record verified agent payment transaction
     const transaction = await prisma.transaction.create({
       data: {
         creatorWallet: wallet.toLowerCase(),
@@ -60,6 +81,7 @@ router.post('/', paymentLimiter, async (req: Request, res: Response): Promise<vo
         currency: 'USDC',
         type: 'agent',
         txHash: txHash.toLowerCase(),
+        senderWallet: verification.from.toLowerCase(),
         status: 'confirmed',
         agentContext,
         agentQuery,
