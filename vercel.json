@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "installCommand": "npm install && npm run db:generate --workspace=backend",
   "builds": [
     {
       "src": "backend/src/index.ts",
@@ -10,6 +11,7 @@
       "use": "@vercel/next"
     }
   ],
+  "outputDirectory": "frontend/.next",
   "routes": [
     {
       "src": "/api/(.*)",

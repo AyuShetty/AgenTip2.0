@@ -45,8 +45,22 @@ router.post('/', paymentLimiter, async (req: Request, res: Response): Promise<vo
     const contentTitle = (req.headers['x-content-title'] as string) || req.path;
     const agentAddress = (req.headers['x-agent-address'] as string) || 'unknown';
 
-    // Verify on-chain. In production this would check the Escrow contract instead of direct transfer
-    const verification = await verifyUSDCTransfer(txHash, process.env.ESCROW_ADDRESS || wallet, paymentAmount);
+    // In demo / dev mode we can skip on-chain verification to make agent payments work without a live Base TX
+    const allowFakePayments = process.env.X402_ALLOW_FAKE_PAYMENTS === 'true';
+
+    let verification = { valid: false, amount: 0, from: '', to: '' };
+
+    if (allowFakePayments) {
+      verification = {
+        valid: true,
+        amount: paymentAmount,
+        from: agentAddress || '0xagent',
+        to: wallet,
+      };
+    } else {
+      // Verify on-chain. In production this would check the Escrow contract instead of direct transfer
+      verification = await verifyUSDCTransfer(txHash, process.env.ESCROW_ADDRESS || wallet, paymentAmount);
+    }
 
     if (!verification.valid) {
       // Record as failed
