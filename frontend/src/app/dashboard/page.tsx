@@ -2,16 +2,20 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import type { Socket } from 'socket.io-client';
+import { createSocket } from '@/lib/socket';
 import {
   Zap, ArrowLeft, DollarSign, Heart, Bot, Eye,
   Copy, Check, TrendingUp, ExternalLink, Brain, Shield, Lock
 } from 'lucide-react';
-import { io, Socket } from 'socket.io-client';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Prevent static generation for this dynamic page
+export const dynamic = 'force-dynamic';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://agentip-production.up.railway.app';
 
@@ -168,18 +172,20 @@ export default function DashboardPage() {
     if (!isOnboarded || !wallet) return;
 
     // Connect WebSocket
-    const s = io(API_URL);
+    const s = createSocket(API_URL);
     setSocket(s);
 
-    s.emit('join-creator', wallet);
+    if (s) {
+      s.emit('join-creator', wallet);
 
-    s.on('new-tip', () => fetchStats(wallet));
-    s.on('new-agent-payment', () => {
-      fetchStats(wallet);
-      fetchIntelligence(wallet);
-    });
+      s.on('new-tip', () => fetchStats(wallet));
+      s.on('new-agent-payment', () => {
+        fetchStats(wallet);
+        fetchIntelligence(wallet);
+      });
+    }
 
-    return () => { s.disconnect(); };
+    return () => { s?.disconnect(); };
   }, [isOnboarded, wallet, fetchStats, fetchIntelligence]);
 
   const handleOnboard = async () => {

@@ -9,6 +9,9 @@ import TransactionsFeed from '@/components/TransactionsFeed';
 import EmailNotifications from '@/components/EmailNotifications';
 import IntelligenceFeed from '@/components/IntelligenceFeed';
 
+// Prevent static generation for this dynamic page
+export const dynamic = 'force-dynamic';
+
 // Project-Specific 3D Visualizer - USDC Payment Flow Network
 const AgentTipVisualizer = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

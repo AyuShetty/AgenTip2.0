@@ -9,6 +9,12 @@ const nextConfig = {
   typescript: {
     tsconfigPath: './tsconfig.json',
   },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push('socket.io-client');
+    }
+    return config;
+  },
 };
 
 module.exports = nextConfig;
