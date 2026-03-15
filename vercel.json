@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install && npm run db:generate --workspace=backend",
+  "buildCommand": "npm run db:generate --workspace=backend && npm run build --workspace=frontend",
   "builds": [
     {
       "src": "backend/src/index.ts",
