@@ -1,28 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm install --prefix backend && npm run db:generate --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
   "builds": [
-    {
-      "src": "backend/package.json",
-      "use": "@vercel/node",
-      "config": {
-        "maxLambdaSize": "250mb"
-      }
-    },
     {
       "src": "frontend/package.json",
       "use": "@vercel/next"
     }
   ],
-  "outputDirectory": "frontend/.next",
-  "env": {
-    "DATABASE_URL": "@database-url"
-  },
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/backend/src/index.ts"
-    },
     {
       "src": "/(.*)",
       "dest": "/frontend"
