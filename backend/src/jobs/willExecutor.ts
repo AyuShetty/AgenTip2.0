@@ -1,5 +1,5 @@
 import cron from 'node-cron'
-import { prisma } from '../lib/prisma'
+import prisma from '../lib/prisma'
 import { readEnsWill, isWillTriggered, daysUntilTriggered } from '../lib/ensWill'
 
 export function startWillExecutorCron() {
