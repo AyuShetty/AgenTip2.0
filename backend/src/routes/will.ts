@@ -196,9 +196,9 @@ router.post('/execute', async (req, res) => {
         ensName,
         totalAmount,
         action: will.action,
-        recipients: will.recipients,
+        recipients: will.recipients as any,
         message: will.message,
-        txHashes,
+        txHashes: txHashes as any,
         status: 'executed'
       }
     })
