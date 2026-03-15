@@ -286,7 +286,7 @@ def run_multi_agent_demo(api_url: str, creator_wallet: str):
             'Content-Type': 'application/json',
             'X-Agent-Context': agent['context'],
             'X-Agent-Query': agent['query'],
-            'X-Content-Title': f'http://localhost:3001/content/article-{i+1}',
+            'X-Content-Title': f'https://agentip-production.up.railway.app/content/article-{i+1}',
             'X-Agent-Address': f'0xAgent{i+1}{"0" * 34}',
         }
 
@@ -322,13 +322,13 @@ def main():
     )
     parser.add_argument(
         '--api-url',
-        default='http://localhost:3001',
-        help='AgentTip backend API URL (default: http://localhost:3001)'
+        default='https://agentip-production.up.railway.app',
+        help='AgentTip backend API URL (default: https://agentip-production.up.railway.app)'
     )
     parser.add_argument(
         '--content-url',
-        default='http://localhost:3001/health',
-        help='Content URL to request (default: http://localhost:3001/health)'
+        default='https://agentip-production.up.railway.app/health',
+        help='Content URL to request (default: https://agentip-production.up.railway.app/health)'
     )
     parser.add_argument(
         '--wallet',

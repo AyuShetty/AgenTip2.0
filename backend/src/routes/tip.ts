@@ -42,6 +42,26 @@ router.post('/', paymentLimiter, async (req: Request, res: Response): Promise<vo
     // Mark as used immediately to prevent race conditions
     markTxHashUsed(txHash);
 
+    // Verify the transaction on-chain before crediting the creator
+    const verification = await verifyUSDCTransfer(txHash, wallet, amount);
+    
+    if (!verification.valid) {
+      // Record as failed transaction
+      await prisma.transaction.create({
+        data: {
+          creatorWallet: wallet.toLowerCase(),
+          amount,
+          currency: 'USDC',
+          type: 'human',
+          txHash: txHash.toLowerCase(),
+          senderWallet: req.body.senderWallet?.toLowerCase() || null,
+          status: 'failed',
+        },
+      });
+      res.status(400).json({ error: 'Transaction verification failed on Base. Please contact support.' });
+      return;
+    }
+
     // Ensure creator exists
     await prisma.creator.upsert({
       where: { wallet: wallet.toLowerCase() },
@@ -49,7 +69,7 @@ router.post('/', paymentLimiter, async (req: Request, res: Response): Promise<vo
       create: { wallet: wallet.toLowerCase() },
     });
 
-    // Record transaction (will verify on-chain asynchronously for demo)
+    // Record verified transaction
     const transaction = await prisma.transaction.create({
       data: {
         creatorWallet: wallet.toLowerCase(),
@@ -57,8 +77,8 @@ router.post('/', paymentLimiter, async (req: Request, res: Response): Promise<vo
         currency: 'USDC',
         type: 'human',
         txHash: txHash.toLowerCase(),
-        senderWallet: req.body.senderWallet?.toLowerCase() || null,
-        status: 'confirmed', // In production, start as 'pending' and verify
+        senderWallet: verification.from.toLowerCase() || req.body.senderWallet?.toLowerCase() || null,
+        status: 'confirmed', 
       },
     });
 

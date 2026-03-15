@@ -9,7 +9,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm ci
+# Using npm install instead of npm ci to avoid lockfile strictness issues in Railway builds
+RUN npm install
 
 # Copy prisma schema and generate client
 COPY prisma ./prisma
@@ -25,5 +26,5 @@ RUN npm run build
 # Expose port
 EXPOSE 3001
 
-# Start the server
-CMD ["node", "dist/index.js"]
+# Start the server (pushing db schema first to ensure sync)
+CMD npx prisma db push --accept-data-loss && node dist/index.js

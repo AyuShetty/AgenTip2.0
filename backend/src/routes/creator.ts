@@ -3,6 +3,7 @@ import prisma from '../lib/prisma';
 import { isValidAddress } from '../lib/verify';
 import { getDocViewerUrl } from '../lib/fileverse';
 import { statsLimiter } from '../middleware/rateLimit';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 
@@ -95,7 +96,7 @@ router.get('/:wallet/stats', statsLimiter, async (req: Request, res: Response): 
  * GET /creator/:wallet/intelligence
  * Returns the creator's Fileverse dDoc viewer URL and recent agent contexts
  */
-router.get('/:wallet/intelligence', statsLimiter, async (req: Request, res: Response): Promise<void> => {
+router.get('/:wallet/intelligence', requireAuth, statsLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const wallet = req.params.wallet as string;
 
@@ -105,6 +106,12 @@ router.get('/:wallet/intelligence', statsLimiter, async (req: Request, res: Resp
     }
 
     const normalizedWallet = wallet.toLowerCase();
+    
+    // Security: Only the owner can view their private intelligence feed
+    if (req.user?.wallet !== normalizedWallet) {
+      res.status(403).json({ error: 'Forbidden' });
+      return;
+    }
 
     const creator = await prisma.creator.findUnique({
       where: { wallet: normalizedWallet },
@@ -145,6 +152,42 @@ router.get('/:wallet/intelligence', statsLimiter, async (req: Request, res: Resp
     });
   } catch (error) {
     console.error('[Creator] Error fetching intelligence:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * PUT /creator/:wallet/profile
+ * Updates creator profile settings like ENS name
+ */
+router.put('/:wallet/profile', requireAuth, statsLimiter, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const wallet = req.params.wallet as string;
+    const { ensName } = req.body;
+
+    if (!isValidAddress(wallet)) {
+      res.status(400).json({ error: 'Invalid wallet address' });
+      return;
+    }
+
+    const normalizedWallet = wallet.toLowerCase();
+
+    // Security check
+    if (req.user?.wallet !== normalizedWallet) {
+      res.status(403).json({ error: 'Forbidden' });
+      return;
+    }
+
+    const updated = await (prisma.creator as any).update({
+      where: { wallet: normalizedWallet },
+      data: { 
+        ensName: ensName ? String(ensName).toLowerCase() : null 
+      },
+    });
+
+    res.json({ success: true, creator: { ensName: (updated as any).ensName } });
+  } catch (error) {
+    console.error('[Creator] Error updating profile:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

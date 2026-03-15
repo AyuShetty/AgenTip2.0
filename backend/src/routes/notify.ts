@@ -5,13 +5,20 @@ import { sendDailySummaryEmail } from '../lib/email'
 import { getBestYieldStrategy } from '../lib/elsa'
 import { statsLimiter } from '../middleware/rateLimit'
 import { isValidAddress } from '../lib/verify'
+import { requireAuth } from '../middleware/auth'
 
 const router = express.Router()
 
 // POST /notify/register
 // Creator registers their email and preferred summary time
-router.post('/register', statsLimiter, async (req, res) => {
+router.post('/register', requireAuth, statsLimiter, async (req, res) => {
   const { walletAddress, email, summaryTime } = req.body
+  
+  // Security check: Only allow modifying own profile
+  if (req.user?.wallet !== walletAddress.toLowerCase()) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
+  }
 
   if (!email || !email.includes('@')) {
     res.status(400).json({ error: 'Valid email required' })
@@ -51,9 +58,15 @@ router.post('/register', statsLimiter, async (req, res) => {
 
 // POST /notify/test
 // Sends an immediate test summary email
-router.post('/test', statsLimiter, async (req, res) => {
+router.post('/test', requireAuth, statsLimiter, async (req, res) => {
   const { walletAddress } = req.body
   
+  // Security check
+  if (req.user?.wallet !== walletAddress.toLowerCase()) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
+  }
+
   if (!walletAddress || !isValidAddress(walletAddress)) {
     res.status(400).json({ error: 'Invalid wallet address' })
     return;
@@ -76,9 +89,15 @@ router.post('/test', statsLimiter, async (req, res) => {
 
 // PUT /notify/schedule
 // Updates summary time
-router.put('/schedule', statsLimiter, async (req, res) => {
+router.put('/schedule', requireAuth, statsLimiter, async (req, res) => {
   const { walletAddress, summaryTime } = req.body
   
+  // Security check
+  if (req.user?.wallet !== walletAddress.toLowerCase()) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
+  }
+
   if (!walletAddress || !isValidAddress(walletAddress)) {
     res.status(400).json({ error: 'Invalid wallet address' })
     return;
@@ -93,9 +112,15 @@ router.put('/schedule', statsLimiter, async (req, res) => {
 })
 
 // DELETE /notify/unsubscribe
-router.delete('/unsubscribe', statsLimiter, async (req, res) => {
+router.delete('/unsubscribe', requireAuth, statsLimiter, async (req, res) => {
   const { walletAddress } = req.body
   
+  // Security check
+  if (req.user?.wallet !== walletAddress.toLowerCase()) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
+  }
+
   if (!walletAddress || !isValidAddress(walletAddress)) {
     res.status(400).json({ error: 'Invalid wallet address' })
     return;
