@@ -9,7 +9,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm ci
+# Using npm install instead of npm ci to avoid lockfile strictness issues in Railway builds
+RUN npm install
 
 # Copy prisma schema and generate client
 COPY prisma ./prisma
